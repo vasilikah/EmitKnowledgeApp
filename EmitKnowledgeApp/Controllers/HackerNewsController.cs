@@ -1,4 +1,5 @@
-﻿using EmitKnowledgeApp.Services;
+﻿using EmitKnowledgeApp.Models;
+using EmitKnowledgeApp.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmitKnowledgeApp.Controllers
@@ -19,5 +20,12 @@ namespace EmitKnowledgeApp.Controllers
         {
             return Ok(await _hackerNewsService.GetTopNews());
         }
+
+        [HttpGet("GetNewsSortedByNewestToOldest")]
+        public async Task<ActionResult> GetNewsSortedByNewestToOldest()
+        {
+            return Ok(await _hackerNewsService.GetNewsSortedByNewestToOldest());
+        }
     }
 }
+

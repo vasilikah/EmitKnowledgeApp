@@ -16,20 +16,20 @@ namespace EmitKnowledgeApp.Services.Implementation
         {
             try
             {
-                string responseContent = await _httpClient.GetStringAsync("topstories.json");
+                string responseContent = await _httpClient.GetStringAsync("newstories.json");
                 List<int> topStoryIds = JsonConvert.DeserializeObject<List<int>>(responseContent);
 
+                List<News> newsItems = new List<News>();
                 if (topStoryIds != null && topStoryIds.Count > 0)
                 {
-                    List<News> newsItems = new List<News>();
-                    foreach (int storyId in topStoryIds)
+                   foreach (int storyId in topStoryIds)
                     {
                         News newsItem = await GetNewsItemDetails(storyId);
                         if (newsItem != null)
                         {
                             newsItems.Add(newsItem);
                         }
-                    }
+                    }                   
 
                     return newsItems;
                 }
@@ -63,7 +63,20 @@ namespace EmitKnowledgeApp.Services.Implementation
             }
             catch (Exception ex)
             {
-                return null;
+                throw new Exception($"Failed to get news items: {ex.Message}");
+            }
+        }
+
+        public async Task<List<News>> GetNewsSortedByNewestToOldest()
+        {
+            try
+            {
+                List<News> newsItems = await GetTopNews();
+                return newsItems.OrderByDescending(item => item.Time).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to sort news: {ex.Message}");
             }
         }
     }
