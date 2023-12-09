@@ -22,14 +22,14 @@ namespace EmitKnowledgeApp.Services.Implementation
                 List<News> newsItems = new List<News>();
                 if (topStoryIds != null && topStoryIds.Count > 0)
                 {
-                   foreach (int storyId in topStoryIds)
+                    foreach (int storyId in topStoryIds)
                     {
                         News newsItem = await GetNewsItemDetails(storyId);
                         if (newsItem != null)
                         {
                             newsItems.Add(newsItem);
                         }
-                    }                   
+                    }
 
                     return newsItems;
                 }
@@ -79,6 +79,24 @@ namespace EmitKnowledgeApp.Services.Implementation
                 throw new Exception($"Failed to sort news: {ex.Message}");
             }
         }
+
+        public async Task<List<News>> GetHotNews()
+        {
+            try
+            {
+                List<News> topNewsItems = await GetTopNews();
+
+                var sortedNews = topNewsItems.OrderByDescending(item => item.Score).ToList();
+
+                return sortedNews;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to fetch and sort hot news items: {ex.Message}");
+            }
+        }
+
     }
 }
+
 
