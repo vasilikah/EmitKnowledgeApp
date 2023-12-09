@@ -7,5 +7,7 @@ namespace EmitKnowledgeApp.Services
         Task<List<News>> GetTopNews();
         Task<List<News>> GetNewsSortedByNewestToOldest();
         Task<List<News>> GetHotNews();
+        Task<List<News>> GetAllAskHNNews();
+        Task<List<News>> GetAllShowHNNews();
     }
 }

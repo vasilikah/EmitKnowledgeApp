@@ -33,5 +33,17 @@ namespace EmitKnowledgeApp.Controllers
         {
             return Ok(await _hackerNewsService.GetHotNews());
         }
+
+        [HttpGet("GetAllAskHNNews")]
+        public async Task<ActionResult> GetAllAskHNNews()
+        {
+            return Ok(await _hackerNewsService.GetAllAskHNNews());
+        }
+
+        [HttpGet("GetAllShowHNNews")]
+        public async Task<ActionResult> GetAllShowHNNews()
+        {
+            return Ok(await _hackerNewsService.GetAllShowHNNews());
+        }
     }
 }

@@ -7,6 +7,8 @@ namespace EmitKnowledgeApp.Services.Implementation
     public class HackerNewsService : IHackerNewsService
     {
         private readonly HttpClient _httpClient;
+        private const string AskHNPrefix = "Ask HN:";
+        private const string ShowHNPrefix = "Show HN:";
         public HackerNewsService()
         {
             _httpClient = new HttpClient();
@@ -93,6 +95,38 @@ namespace EmitKnowledgeApp.Services.Implementation
             catch (Exception ex)
             {
                 throw new Exception($"Failed to fetch and sort hot news items: {ex.Message}");
+            }
+        }
+
+        public async Task<List<News>> GetAllAskHNNews()
+        {
+            try
+            {
+                List<News> allNewsItems = await GetTopNews();
+
+                var showHNNews = allNewsItems.Where(item => item.Title.StartsWith(AskHNPrefix, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                return showHNNews;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to fetch Show HN news items: {ex.Message}");
+            }
+        }
+
+        public async Task<List<News>> GetAllShowHNNews()
+        {
+            try
+            {
+                List<News> allNewsItems = await GetTopNews();
+
+                var showHNNews = allNewsItems.Where(item => item.Title.StartsWith(ShowHNPrefix, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                return showHNNews;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to fetch Show HN news items: {ex.Message}");
             }
         }
 
