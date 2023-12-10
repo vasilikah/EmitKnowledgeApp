@@ -20,6 +20,11 @@ namespace EmitKnowledgeApp.Services.Implementation
             try
             {
                 string responseContent = await _httpClient.GetStringAsync("newstories.json");
+
+                if (string.IsNullOrEmpty(responseContent))
+                {
+                    throw new Exception("Received empty or null response from newstories.json");
+                }
                 List<int> topStoryIds = JsonConvert.DeserializeObject<List<int>>(responseContent);
 
                 List<News> newsItems = new List<News>();
@@ -46,29 +51,6 @@ namespace EmitKnowledgeApp.Services.Implementation
                 throw new Exception($"An error occurred: {ex.Message}");
             }
         }
-        private async Task<News> GetNewsItemDetails(int newsId)
-        {
-            try
-            {
-                string json = await _httpClient.GetStringAsync($"item/{newsId}.json");
-                dynamic newsItemJson = JsonConvert.DeserializeObject(json);
-                News newsItem = new News
-                {
-                    Title = newsItemJson.title,
-                    Url = newsItemJson.url,
-                    Score = newsItemJson.score,
-                    By = newsItemJson.by,
-                    Time = newsItemJson.time,
-                    Descendants = newsItemJson.descendants,
-                    Type = newsItemJson.type
-                };
-                return newsItem;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to get news items: {ex.Message}");
-            }
-        }
 
         public async Task<List<News>> GetNewsSortedByNewestToOldest()
         {
@@ -87,11 +69,47 @@ namespace EmitKnowledgeApp.Services.Implementation
         {
             try
             {
-                List<News> topNewsItems = await GetTopNews();
+                string topStoriesJson = await _httpClient.GetStringAsync("topstories.json");
 
-                var sortedNews = topNewsItems.OrderByDescending(item => item.Score).ToList();
+                if (string.IsNullOrEmpty(topStoriesJson))
+                {
+                    throw new Exception("Received empty or null response from topstories.json");
+                }
 
-                return sortedNews;
+                List<int> topStoryIds = JsonConvert.DeserializeObject<List<int>>(topStoriesJson);
+
+                if (topStoryIds == null)
+                {
+                    throw new Exception("Failed to deserialize top story IDs from topstories.json");
+                }
+
+                List<News> hotNews = new List<News>();
+
+                foreach (int storyId in topStoryIds)
+                {
+                    try
+                    {
+                        News newsItem = await GetNewsItemDetails(storyId);
+                        if (newsItem != null)
+                        {
+                            hotNews.Add(newsItem);
+                        }
+                        else
+                        {
+                            
+                            Console.WriteLine($"NewsItem for ID {storyId} is null");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        
+                        Console.WriteLine($"Failed to fetch news item with ID {storyId}: {ex.Message}");
+                    }
+                }
+
+                hotNews = hotNews.OrderByDescending(item => item.Score).ToList();
+
+                return hotNews;
             }
             catch (Exception ex)
             {
@@ -104,6 +122,12 @@ namespace EmitKnowledgeApp.Services.Implementation
             try
             {
                 string askHNJson = await _httpClient.GetStringAsync("askstories.json");
+
+                if (string.IsNullOrEmpty(askHNJson))
+                {
+                    throw new Exception("Received empty or null response from askstories.json");
+                }
+
                 List<int> askHNStoryIds = JsonConvert.DeserializeObject<List<int>>(askHNJson);
 
                 List<News> askHNStories = new List<News>();
@@ -128,6 +152,12 @@ namespace EmitKnowledgeApp.Services.Implementation
             try
             {
                 string showHNJson = await _httpClient.GetStringAsync("showstories.json");
+
+                if (string.IsNullOrEmpty(showHNJson))
+                {
+                    throw new Exception("Received empty or null response from showstories.json");
+                }
+
                 List<int> showHNStoryIds = JsonConvert.DeserializeObject<List<int>>(showHNJson);
 
                 List<News> showHNStories = new List<News>();
@@ -152,12 +182,10 @@ namespace EmitKnowledgeApp.Services.Implementation
         {
             try
             {
-                List<News> allNewsItems = await GetTopNews(); // Fetch all news items
+                List<News> allNewsItems = await GetTopNews();
 
-                
                 var searchResults = allNewsItems.Where(item =>
                     item.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
-                    //item.Content != null && item.Content.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
                     item.By.Contains(keyword, StringComparison.OrdinalIgnoreCase)
                 ).ToList();
 
@@ -190,7 +218,7 @@ namespace EmitKnowledgeApp.Services.Implementation
                     {
                         Text = commentItemJson.text,
                         By = commentItemJson.by,
-                        Time = commentItemJson.time,
+                        Time = ConvertUnixTimeToDateTime(commentItemJson),
                         Type = commentItemJson.type,
                     };
 
@@ -205,7 +233,41 @@ namespace EmitKnowledgeApp.Services.Implementation
             }
         }
 
+        //private methods
+        private async Task<News> GetNewsItemDetails(int newsId)
+        {
+            try
+            {
+                string json = await _httpClient.GetStringAsync($"item/{newsId}.json");
+                dynamic newsItemJson = JsonConvert.DeserializeObject(json);
 
+                News newsItem = new News
+                {
+                    Title = newsItemJson.title,
+                    Url = newsItemJson.url,
+                    Score = newsItemJson.score,
+                    By = newsItemJson.by,
+                    Time = ConvertUnixTimeToDateTime(newsItemJson),
+                    Descendants = newsItemJson.descendants,
+                    Type = newsItemJson.type
+                };
+                return newsItem;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to get news items: {ex.Message}");
+            }
+        }
+
+        private DateTime ConvertUnixTimeToDateTime(dynamic unixTime)
+        {
+            long unixDateTime = Convert.ToInt64(unixTime.time); // Explicitly convert to long
+
+            DateTimeOffset dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(unixDateTime);
+            DateTime dateTime = dateTimeOffset.UtcDateTime;
+
+            return dateTime;
+        }
     }
 }
 
