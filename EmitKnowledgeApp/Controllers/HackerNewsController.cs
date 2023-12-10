@@ -45,5 +45,18 @@ namespace EmitKnowledgeApp.Controllers
         {
             return Ok(await _hackerNewsService.GetAllShowHNNews());
         }
+
+        [HttpGet("SearchNewsByKeyword")]
+        public async Task<IActionResult> SearchNewsByKeyword(string keyword)
+        {
+            return Ok(await _hackerNewsService.SearchNewsByKeyword(keyword));
+        }
+
+        [HttpGet("GetCommentsForNewsItem")]
+        public async Task<IActionResult> GetCommentsForNewsItem(int newsId)
+        {
+               return Ok (await _hackerNewsService.GetCommentsForNewsItem(newsId));
+                           
+        }
     }
 }

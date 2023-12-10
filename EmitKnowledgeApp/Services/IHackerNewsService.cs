@@ -9,5 +9,7 @@ namespace EmitKnowledgeApp.Services
         Task<List<News>> GetHotNews();
         Task<List<News>> GetAllAskHNNews();
         Task<List<News>> GetAllShowHNNews();
+        Task<List<News>> SearchNewsByKeyword(string keyword);
+        Task<List<Comment>> GetCommentsForNewsItem(int newsItemId);
     }
 }

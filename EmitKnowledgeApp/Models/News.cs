@@ -11,8 +11,7 @@ namespace EmitKnowledgeApp.Models
         public long Time { get; set; }
         public int Descendants { get; set; }
         public string Type {  get; set; } = string.Empty;
-        //public List<int> Kids { get; set; }
-        //public List<Comment> Comments { get; set; }
+        public string Content { get; set; } = string.Empty;
 
     }
 }
